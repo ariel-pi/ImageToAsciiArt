@@ -8,8 +8,18 @@ import java.util.TreeSet;
 public class SubImgCharMatcher {
 
     private  TreeMap<Double, TreeSet<Character>> charBrightnessMap = new TreeMap<>();
+    /**
+     * A flag to indicate if the brightness of the characters in the map needs to be normalized.
+     * After normalize once this flag set to be false until we added a new char with grater brightness then
+     * the max brightness or a new char with less brightness then the min brightness.
+     */
+    private boolean isNeedToNormalize = true;
+    private Double maxBrightness;
+    private Double minBrightness;
 
     public SubImgCharMatcher(char[] charset) {
+        maxBrightness = null;
+        minBrightness = null;
         for (char c : charset) {
             addChar(c);
         }
@@ -56,6 +66,14 @@ public class SubImgCharMatcher {
             charList.add(c);
             charBrightnessMap.put(brightness, charList);
         }
+        if (maxBrightness == null || brightness > maxBrightness) {
+            maxBrightness = brightness;
+            isNeedToNormalize = true;
+        }
+        if (minBrightness == null || brightness < minBrightness) {
+            minBrightness = brightness;
+            isNeedToNormalize = true;
+        }
     }
 
     public void removeChar(char c) {
@@ -65,8 +83,11 @@ public class SubImgCharMatcher {
                     charBrightnessMap.get(brightness).remove(c);
                     if (charBrightnessMap.get(brightness).isEmpty()) {
                         charBrightnessMap.remove(brightness);
+                        if (brightness.equals(maxBrightness) || brightness.equals(minBrightness)) {
+                            isNeedToNormalize = true;
+                        }
+                        return;
                     }
-                    return;
                 }
             }
         }
@@ -78,6 +99,9 @@ public class SubImgCharMatcher {
      * use this method just before displaying the image.
      */
     private void normalizeBrightness() {
+        if (!isNeedToNormalize) {
+            return;
+        }
         TreeMap <Double, TreeSet<Character>> newCharBrightnessMap = new TreeMap<>();
         Double minBrightness = charBrightnessMap.firstKey();
         Double maxBrightness = charBrightnessMap.lastKey();
@@ -86,6 +110,7 @@ public class SubImgCharMatcher {
             newCharBrightnessMap.put(newBrightness, charBrightnessMap.get(brightness));
         }
         charBrightnessMap = newCharBrightnessMap;
+        isNeedToNormalize = false;
     }
 
 
