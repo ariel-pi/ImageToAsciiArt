@@ -59,7 +59,17 @@ public class SubImgCharMatcher {
     }
 
     public void removeChar(char c) {
-        charBrightnessMap.remove(c);
+        for (Double brightness : charBrightnessMap.keySet()) {
+            for (Character character : charBrightnessMap.get(brightness)) {
+                if (character.equals(c)) {
+                    charBrightnessMap.get(brightness).remove(c);
+                    if (charBrightnessMap.get(brightness).isEmpty()) {
+                        charBrightnessMap.remove(brightness);
+                    }
+                    return;
+                }
+            }
+        }
     }
 
 
