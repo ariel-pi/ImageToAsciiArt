@@ -12,4 +12,4 @@ brightness closest to the brightness of the sub-image in log(n). Although insert
 done in log(n). But retrieving a note by brightness is an operation that is performed more times in a
 meaningful way, so we wanted to optimize it as much as possible.
 
-3. todo write which methods we have changed or added to the original code.
+3. todo write which methods we have changed or added to the original code: Image.getPixelArray.

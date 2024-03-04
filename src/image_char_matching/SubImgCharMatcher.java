@@ -101,7 +101,7 @@ public class SubImgCharMatcher {
      * Normalizes the brightness of the characters in the map to be between 0 and 1.
      * use this method just before displaying the image.
      */
-    private void normalizeBrightness() {
+    public void normalizeBrightness() {
         if (!isNeedToNormalize) {
             return;
         }
@@ -113,6 +113,8 @@ public class SubImgCharMatcher {
             newCharBrightnessMap.put(newBrightness, charBrightnessMap.get(brightness));
         }
         charBrightnessMap = newCharBrightnessMap;
+        this.minBrightness = charBrightnessMap.firstKey();
+        this.maxBrightness = charBrightnessMap.lastKey();
         isNeedToNormalize = false;
     }
 

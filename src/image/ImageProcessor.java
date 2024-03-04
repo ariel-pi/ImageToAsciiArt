@@ -39,20 +39,21 @@ public class ImageProcessor {
         return powerOf2;
     }
 
-    public static Image[][] divideIntoSubImages(Color[][] paddedImage, int numOfCols) {
-        int height = paddedImage.length;
-        int width = paddedImage[0].length;
+    public static Image[][] divideIntoSubImages(Image paddedImage, int numOfCols) {
+        int height = paddedImage.getHeight();
+        int width = paddedImage.getWidth();
         int sizeOfSubImg = width / numOfCols;
         int numOfRows = height / sizeOfSubImg;
         Image[][] subImages = new Image[numOfRows][numOfCols];
         // todo: change the logic so we will iterate by subimages and not by pixels, and then we will not
         //  need setPixel method
-
+        Color[][] paddedImagePixels = paddedImage.getPixelArray();
         for (int i = 0; i < subImages.length; i++) {
             for (int j = 0; j < subImages[i].length; j++) {
                 Color[][] subImagePixels = new Color[sizeOfSubImg][sizeOfSubImg];
                 for (int k = 0; k < sizeOfSubImg; k++) {
-                    subImagePixels[k] = Arrays.copyOfRange(paddedImage[i * sizeOfSubImg + k], j * sizeOfSubImg,
+                    subImagePixels[k] = Arrays.copyOfRange(paddedImagePixels[i * sizeOfSubImg + k],
+                            j * sizeOfSubImg,
                             (j + 1) * sizeOfSubImg);
                 }
                 subImages[i][j] = new Image(subImagePixels, sizeOfSubImg, sizeOfSubImg);
@@ -68,11 +69,11 @@ public class ImageProcessor {
                 sum += getPixelGrayScale(image.getPixel(i, j));
             }
         }
-        return  sum / (image.getHeight() * image.getWidth());
+        return  (sum / (image.getHeight() * image.getWidth()));
     }
 
     public static double getPixelGrayScale(Color color) {
-        return 0.2126 * color.getRed() + 0.7152 * color.getGreen() + 0.0722 * color.getBlue();
+        return (0.2126 * color.getRed() + 0.7152 * color.getGreen() + 0.0722 * color.getBlue()) / 255;
     }
 
 }

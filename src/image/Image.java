@@ -65,4 +65,6 @@ public class Image {
         }
     }
 
+    public Color[][] getPixelArray() { return pixelArray;
+    }
 }
