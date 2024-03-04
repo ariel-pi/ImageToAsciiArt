@@ -91,6 +91,7 @@ public class SubImgCharMatcher {
                         }
                         return;
                     }
+                    break;
                 }
             }
         }

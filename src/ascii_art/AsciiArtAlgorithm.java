@@ -59,4 +59,12 @@ public class AsciiArtAlgorithm {
         HtmlAsciiOutput htmlAsciiOutput = new HtmlAsciiOutput("examples/twins.html", "Courier New");
         htmlAsciiOutput.out(asciiArt);
     }
+
+    public void addChar(char c) {
+        subImgCharMatcher.addChar(c);
+    }
+
+    public void removeChar(char c) {
+        subImgCharMatcher.removeChar(c);
+    }
 }
