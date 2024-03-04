@@ -6,28 +6,29 @@ import java.util.Arrays;
 public class ImageProcessor {
 
 
-    public static Color[][] padImage(Color[][] pixelArray) {
-        int currentHeight = pixelArray.length;
-        int currentWidth = pixelArray[0].length;
+    public static Image padImage(Image image) {
+
+        int currentHeight = image.getHeight();
+        int currentWidth = image.getWidth();
         int newHeight = getCeilingPowOf2(currentHeight);
         int newWidth = getCeilingPowOf2(currentWidth);
         if (newHeight == currentHeight && newWidth == currentWidth) {
-            return pixelArray;
+            return image;
         }
         int paddingHeight = (newHeight - currentHeight) / 2;
         int paddingWidth = (newWidth - currentWidth) / 2;
-        Color[][] paddedImage = new Color[newHeight][newWidth];
+        Color[][] paddedImagePixels = new Color[newHeight][newWidth];
         for (int row = 0; row < newHeight; row++) {
             for (int col = 0; col < newWidth; col++) {
                 if (row < paddingHeight || row >= paddingHeight + currentHeight ||
                         col < paddingWidth || col >= paddingWidth + currentWidth) {
-                    paddedImage[row][col] = Color.WHITE;
+                    paddedImagePixels[row][col] = Color.WHITE;
                 } else {
-                    paddedImage[row][col] = pixelArray[row - paddingHeight][col - paddingWidth];
+                    paddedImagePixels[row][col] = image.getPixel(row - paddingHeight,col - paddingWidth);
                 }
             }
         }
-        return paddedImage;
+        return new Image(paddedImagePixels, newWidth, newHeight);
     }
 
     private static int getCeilingPowOf2(int currentHeight) {
