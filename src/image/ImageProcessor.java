@@ -1,6 +1,7 @@
 package image;
 
 import java.awt.*;
+import java.util.Arrays;
 
 public class ImageProcessor {
 
@@ -45,19 +46,18 @@ public class ImageProcessor {
         Image[][] subImages = new Image[numOfRows][numOfCols];
         // todo: change the logic so we will iterate by subimages and not by pixels, and then we will not
         //  need setPixel method
-        for (int i = 0; i < height; i++) {
-            for (int j = 0; j < width; j++) {
 
-                subImages[i / numOfRows][j / numOfCols].setPixel(i % sizeOfSubImg, j % sizeOfSubImg,
-                        paddedImage[i][j]);
-
+        for (int i = 0; i < subImages.length; i++) {
+            for (int j = 0; j < subImages[i].length; j++) {
+                Color[][] subImagePixels = new Color[sizeOfSubImg][sizeOfSubImg];
+                for (int k = 0; k < sizeOfSubImg; k++) {
+                    subImagePixels[k] = Arrays.copyOfRange(paddedImage[i * sizeOfSubImg + k], j * sizeOfSubImg,
+                            (j + 1) * sizeOfSubImg);
+                }
+                subImages[i][j] = new Image(subImagePixels, sizeOfSubImg, sizeOfSubImg);
             }
         }
         return subImages;
-    }
-
-    public static double getPixelGrayScale(Color color) {
-        return 0.2126 * color.getRed() + 0.7152 * color.getGreen() + 0.0722 * color.getBlue();
     }
 
     public static double convertToGrayScale(Image image) {
@@ -69,4 +69,9 @@ public class ImageProcessor {
         }
         return  sum / (image.getHeight() * image.getWidth());
     }
+
+    public static double getPixelGrayScale(Color color) {
+        return 0.2126 * color.getRed() + 0.7152 * color.getGreen() + 0.0722 * color.getBlue();
+    }
+
 }

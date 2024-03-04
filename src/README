@@ -11,3 +11,5 @@ and the values are a TreeSet of characters. This is how we get a character extra
 brightness closest to the brightness of the sub-image in log(n). Although insertion and deletion will also be
 done in log(n). But retrieving a note by brightness is an operation that is performed more times in a
 meaningful way, so we wanted to optimize it as much as possible.
+
+3. todo write which methods we have changed or added to the original code.

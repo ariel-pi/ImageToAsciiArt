@@ -77,6 +77,8 @@ public class SubImgCharMatcher {
     }
 
     public void removeChar(char c) {
+        //we prefer to go through the map and not to use getBrightness method because getBrightness does
+        // 16*16 and the max size of the map is 132 (for all ascii characters).
         for (Double brightness : charBrightnessMap.keySet()) {
             for (Character character : charBrightnessMap.get(brightness)) {
                 if (character.equals(c)) {
@@ -84,7 +86,8 @@ public class SubImgCharMatcher {
                     if (charBrightnessMap.get(brightness).isEmpty()) {
                         charBrightnessMap.remove(brightness);
                         if (brightness.equals(maxBrightness) || brightness.equals(minBrightness)) {
-                            isNeedToNormalize = true;
+                            isNeedToNormalize = true; //no need to update maxBrightness or minBrightness
+                            // because the normalizing method will do it.
                         }
                         return;
                     }

@@ -20,8 +20,6 @@ public class Image {
         BufferedImage im = ImageIO.read(new File(filename));
         width = im.getWidth();
         height = im.getHeight();
-
-
         pixelArray = new Color[height][width];
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
@@ -48,9 +46,6 @@ public class Image {
         return pixelArray[x][y];
     }
 
-    public void setPixel(int x, int y, Color color) {
-        pixelArray[x][y] = color;
-    }
 
     public void saveImage(String fileName){
         // Initialize BufferedImage, assuming Color[][] is already properly populated.
