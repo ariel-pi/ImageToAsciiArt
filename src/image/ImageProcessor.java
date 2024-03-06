@@ -45,8 +45,6 @@ public class ImageProcessor {
         int sizeOfSubImg = width / numOfCols;
         int numOfRows = height / sizeOfSubImg;
         Image[][] subImages = new Image[numOfRows][numOfCols];
-        // todo: change the logic so we will iterate by subimages and not by pixels, and then we will not
-        //  need setPixel method
         Color[][] paddedImagePixels = paddedImage.getPixelArray();
         for (int i = 0; i < subImages.length; i++) {
             for (int j = 0; j < subImages[i].length; j++) {
@@ -75,5 +73,6 @@ public class ImageProcessor {
     public static double getPixelGrayScale(Color color) {
         return (0.2126 * color.getRed() + 0.7152 * color.getGreen() + 0.0722 * color.getBlue()) / 255;
     }
+
 
 }

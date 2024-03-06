@@ -21,7 +21,7 @@ public class Shell {
     }
 
     private void initializeDefaultValues() throws IOException {
-        asciiArtAlgorithm = new AsciiArtAlgorithm("cat.jpeg", 128, DEFAULT_CHARS);
+        asciiArtAlgorithm = new AsciiArtAlgorithm("cat.jpeg", DEFAULT_CHARS);
         this.asciiCharsToUse = new TreeSet<>();
         for (char c : DEFAULT_CHARS) {
             this.asciiCharsToUse.add(c);
@@ -30,6 +30,7 @@ public class Shell {
     }
 
     private void handleInput(String input) {
+        //todo: add try-catch
         String[] inputArr = input.split(" ");
         switch (inputArr[0]) {
             case "chars":
@@ -41,9 +42,29 @@ public class Shell {
             case "remove":
                 removeChar(inputArr[1]);
                 break;
+            case "res":
+                updateResolution(inputArr[1]);
             default:
                 System.out.println("Invalid command");
         }
+    }
+
+    private void updateResolution(String changeResolutionCommand) {
+        try {
+            if (changeResolutionCommand.equals("up")) {
+                this.asciiArtAlgorithm.resolutionUp();
+            } else if (changeResolutionCommand.equals("down")) {
+                this.asciiArtAlgorithm.resolutionDown();
+            } else {
+                System.out.println("Did not change resolution due to incorrect format.");
+            }
+            System.out.println("Resolution set to " + this.asciiArtAlgorithm.getResolution());
+        }
+        //todo: change to more appropriate exception
+        catch (IllegalArgumentException e){
+            System.out.println("Did not change resolution due to exceeding boundaries.");
+        }
+
     }
 
     private void removeChar(String charsToRemove) {

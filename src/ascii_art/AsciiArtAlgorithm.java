@@ -15,20 +15,24 @@ public class AsciiArtAlgorithm {
 
     private Image image;
     private Image[][] subImages;
-    private int resolution;
+    private int resolution=128;
     private SubImgCharMatcher subImgCharMatcher;
     private char[][] asciiArt;
+    private int maxResolution;
+    private int minResolution;
 
-    public AsciiArtAlgorithm(String filename, int resolution, char[] asciiChars) throws IOException {
+    public AsciiArtAlgorithm(String filename, char[] asciiChars) throws IOException {
         // Load the image from the file.
         this.image = new Image(filename);
-        this.resolution = resolution;
         this.subImgCharMatcher = new SubImgCharMatcher(asciiChars);
+
     }
 
     public char[][] run() {
         // Pad the image to a power of 2.
         image = ImageProcessor.padImage(image);
+        this.maxResolution = image.getWidth();
+        this.minResolution = Math.max(1, image.getWidth() / image.getHeight());
         // Divide the image into sub-images.
         this.subImages = ImageProcessor.divideIntoSubImages(image, resolution);
         asciiArt = new char[subImages.length][subImages[0].length];
@@ -41,7 +45,7 @@ public class AsciiArtAlgorithm {
         }
         return asciiArt;
     }
-
+    //todo: remove the following methods
     public static void main(String[] args) throws IOException {
         int startAsciiValue = 32; // Starting ASCII value
         int numChars = 127 - startAsciiValue; // Number of characters to include (ASCII values 32 to 127)
@@ -51,7 +55,7 @@ public class AsciiArtAlgorithm {
         for (int i = startAsciiValue; i < 127; i++) {
             ascii[i - startAsciiValue] = (char) i;
         }
-        AsciiArtAlgorithm asciiArtAlgorithm = new AsciiArtAlgorithm("examples/WhatsApp Image 2024-03-04 at 13.07.25.jpeg", 256,
+        AsciiArtAlgorithm asciiArtAlgorithm = new AsciiArtAlgorithm("examples/WhatsApp Image 2024-03-04 at 13.07.25.jpeg",
                 ascii);
         char[][] asciiArt = asciiArtAlgorithm.run();
 //        ConsoleAsciiOutput consoleAsciiOutput = new ConsoleAsciiOutput();
@@ -67,4 +71,29 @@ public class AsciiArtAlgorithm {
     public void removeChar(char c) {
         subImgCharMatcher.removeChar(c);
     }
+
+    public void resolutionUp() {
+        if (resolution < maxResolution) {
+            resolution *= 2;
+        }
+        else{
+            // todo: change to more appropriate exception
+            throw new IllegalArgumentException("Resolution is already at maximum");
+        }
+    }
+    public void resolutionDown() {
+        if (resolution > this.minResolution) {
+            resolution /= 2;
+        }
+        else{
+            //todo: change to more appropriate exception
+            throw new IllegalArgumentException("Resolution is already at minimum");
+        }
+    }
+
+    public int getResolution() {
+        return resolution;
+    }
+
+    
 }
