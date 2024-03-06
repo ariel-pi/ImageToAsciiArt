@@ -35,6 +35,11 @@ public class AsciiArtAlgorithm {
         this.minResolution = Math.max(1, image.getWidth() / image.getHeight());
         // Divide the image into sub-images.
         this.subImages = ImageProcessor.divideIntoSubImages(image, resolution);
+        asciiArt = setAsciiArt();
+        return asciiArt;
+    }
+
+    private char[][] setAsciiArt() {
         asciiArt = new char[subImages.length][subImages[0].length];
         subImgCharMatcher.normalizeBrightness();
         for (int i = 0; i < subImages.length; i++) {
@@ -45,6 +50,7 @@ public class AsciiArtAlgorithm {
         }
         return asciiArt;
     }
+
     //todo: remove the following methods
     public static void main(String[] args) throws IOException {
         int startAsciiValue = 32; // Starting ASCII value
@@ -95,5 +101,11 @@ public class AsciiArtAlgorithm {
         return resolution;
     }
 
-    
+
+    public void setNewImage(String newImagePath) throws IOException {
+        this.image = new Image(newImagePath);
+        this.subImages = ImageProcessor.divideIntoSubImages(image, resolution);
+        setAsciiArt();
+
+    }
 }

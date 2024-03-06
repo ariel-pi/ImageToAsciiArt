@@ -1,5 +1,7 @@
 package ascii_art;
 
+import ascii_output.ConsoleAsciiOutput;
+
 import java.io.IOException;
 import java.util.TreeSet;
 
@@ -29,7 +31,7 @@ public class Shell {
         }
     }
 
-    private void handleInput(String input) {
+    private void handleInput(String input) throws IOException {
         //todo: add try-catch
         String[] inputArr = input.split(" ");
         switch (inputArr[0]) {
@@ -44,6 +46,15 @@ public class Shell {
                 break;
             case "res":
                 updateResolution(inputArr[1]);
+                break;
+            case "image": //todo why not working?
+                asciiArtAlgorithm.setNewImage(inputArr[1]);
+                break;
+            case "asciiArt":
+                char[][] asciiArt = asciiArtAlgorithm.run();
+                ConsoleAsciiOutput consoleAsciiOutput = new ConsoleAsciiOutput();
+                consoleAsciiOutput.out(asciiArt);
+                break;
             default:
                 System.out.println("Invalid command");
         }
