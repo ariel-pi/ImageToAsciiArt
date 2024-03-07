@@ -74,7 +74,7 @@ public class Shell {
             case "asciiArt": //todo didnt succed to do it afficiently
                 if(isNeedToUpdateAsciiArt){
                     if (isNeedToCalculateBrightness) {
-                        asciiArtAlgorithm = new AsciiArtAlgorithm(image, subImgCharMatcher, resolution, true);
+                        asciiArtAlgorithm = new AsciiArtAlgorithm(image, subImgCharMatcher, resolution);
                         asciiArt = asciiArtAlgorithm.run();
                         isNeedToCalculateBrightness = false;
                         System.out.println("in new AsciiArtAlgorithm");

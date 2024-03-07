@@ -39,12 +39,12 @@ public class ImageProcessor {
         return powerOf2;
     }
 
-    public static Image[][] divideIntoSubImages(Image paddedImage, int numOfCols) {
+    public static SubImage[][] divideIntoSubImages(Image paddedImage, int numOfCols) {
         int height = paddedImage.getHeight();
         int width = paddedImage.getWidth();
         int sizeOfSubImg = width / numOfCols;
         int numOfRows = height / sizeOfSubImg;
-        Image[][] subImages = new Image[numOfRows][numOfCols];
+        SubImage[][] subImages = new SubImage[numOfRows][numOfCols];
         Color[][] paddedImagePixels = paddedImage.getPixelArray();
         for (int i = 0; i < subImages.length; i++) {
             for (int j = 0; j < subImages[i].length; j++) {
@@ -54,20 +54,24 @@ public class ImageProcessor {
                             j * sizeOfSubImg,
                             (j + 1) * sizeOfSubImg);
                 }
-                subImages[i][j] = new Image(subImagePixels, sizeOfSubImg, sizeOfSubImg);
+
+                Image image = new Image(subImagePixels, sizeOfSubImg, sizeOfSubImg);
+
+                subImages[i][j] = new SubImage(image);
+
             }
         }
         return subImages;
     }
-
-    public static double convertToGrayScale(Image image) {
+    //todo: maybe get Image instead of SubImage
+    public static double convertToGrayScale(SubImage subimage) {
         double sum = 0;
-        for (int i = 0; i < image.getHeight(); i++) {
-            for (int j = 0; j < image.getWidth(); j++) {
-                sum += getPixelGrayScale(image.getPixel(i, j));
+        for (int i = 0; i < subimage.getImage().getHeight(); i++) {
+            for (int j = 0; j < subimage.getImage().getWidth(); j++) {
+                sum += getPixelGrayScale(subimage.getImage().getPixel(i, j));
             }
         }
-        return  (sum / (image.getHeight() * image.getWidth()));
+        return  (sum / (subimage.getImage().getHeight() * subimage.getImage().getWidth()));
     }
 
     public static double getPixelGrayScale(Color color) {
