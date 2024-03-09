@@ -1,6 +1,7 @@
 package image_char_matching;
 
-import java.util.ArrayList;
+import ascii_art.EmptyCharSetException;
+
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -38,10 +39,13 @@ public class SubImgCharMatcher {
         }
         return (double) numWhitePixels / numPixels;
     }
-    public char getCharByImageBrightness(double brightness) {
+    public char getCharByImageBrightness(double brightness) throws EmptyCharSetException {
+        if (charBrightnessMap.isEmpty()) {
+            throw new EmptyCharSetException();
+        }
         //normalize the brightness to be between 0 and 1
         brightness = brightness*(maxBrightness - minBrightness)+ minBrightness;
-        //todo if map is empty
+
         Double closestKey;
         Double ceilingKey = charBrightnessMap.ceilingKey(brightness);
         Double floorKey = charBrightnessMap.floorKey(brightness);

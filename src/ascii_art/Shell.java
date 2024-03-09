@@ -7,9 +7,19 @@ import image.ImageProcessor;
 import image_char_matching.SubImgCharMatcher;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.TreeSet;
 
 public class Shell {
+    public static final String EXCEEDING_BOUNDARIES_MASSAGE = "Did not" +
+            " change resolution due to exceeding boundaries.";
+    public static final String INCORRECT_COMMAND_MASSAGE = "Did not execute due to incorrect command.";
+    private static final String IMAGE_LOAD_ERROR_MASSAGE = "Did not execute due to problem with image file.";
+    public static final String EMPTY_CHARSET_ERROR_MASSAGE = "Did not execute. Charset is empty.";
+
+
+
 
     public static final char[] DEFAULT_CHARS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
     public static final int DEFAULT_RESOLUTION = 128;
@@ -26,18 +36,49 @@ public class Shell {
     private SubImgCharMatcher subImgCharMatcher;
     private Image image;
 
-    public void run() throws IOException { //todo: remove throws IOException and to add try-catch
-        initializeDefaultValues();
+    public void run() {
+        try {
+            initializeDefaultValues();
+
+        }
+        catch (InvalidImageArgumentException e){
+            System.out.println(IMAGE_LOAD_ERROR_MASSAGE);
+        }
         System.out.print(">>> ");
         String input = KeyboardInput.readLine();
         while (!input.equals("exit")) {
-            handleInput(input);
+            try{
+                handleInput(input);
+            }
+            catch (InvalidArgumentException e){
+                System.out.println("Did not "+e.getMessage()+" due to incorrect format.");
+            }
+            catch (ExceedingBoundariesException e){
+                System.out.println(EXCEEDING_BOUNDARIES_MASSAGE);
+            }
+            catch (InvalidImageArgumentException e){
+                System.out.println(IMAGE_LOAD_ERROR_MASSAGE);
+            }
+            catch (EmptyCharSetException e){
+                System.out.println(EMPTY_CHARSET_ERROR_MASSAGE);
+            }
+            catch (InvalidCommandException e) {
+                System.out.println(INCORRECT_COMMAND_MASSAGE);
+            }
+            catch (CommandException e) {
+                System.out.println(INCORRECT_COMMAND_MASSAGE);
+            }
+
+
             System.out.print(">>> ");
             input = KeyboardInput.readLine();
         }
     }
 
-    private void initializeDefaultValues() throws IOException {
+
+
+
+    private void initializeDefaultValues() throws InvalidImageArgumentException{
         subImgCharMatcher = new SubImgCharMatcher(DEFAULT_CHARS);
         resolution = DEFAULT_RESOLUTION;
         setNewImage(DEFAULT_PATH);
@@ -48,52 +89,78 @@ public class Shell {
         }
     }
 
-    private void handleInput(String input) throws IOException {
-        //todo: add try-catch
+    private void handleInput(String input) throws CommandException {
         String[] inputArr = input.split(" ");
         switch (inputArr[0]) {
-            //todo if inputArr[1] is not exist
+            //if inputArr[1] is not exist, and should exist, we will throw an exception, although it is not required.
             case "chars":
                 printChars();
                 break;
             case "add":
+                if(!isArgsExist(inputArr)){
+                    throw new InvalidArgumentException("add");
+                }
                 addChar(inputArr[1]);
                 break;
             case "remove":
+                if(!isArgsExist(inputArr)){
+                    throw new InvalidArgumentException("remove");
+                }
                 removeChar(inputArr[1]);
                 break;
             case "res":
+                if(!isArgsExist(inputArr)){
+                    throw new InvalidArgumentException("change resolution");
+                }
                 updateResolution(inputArr[1]);
                 break;
             case "image":
+                if(!isArgsExist(inputArr)){
+                    throw new InvalidImageArgumentException();
+                }
                 setNewImage(inputArr[1]);
                 break;
             case "output":
+                if(!isArgsExist(inputArr)){
+                    throw new InvalidArgumentException("change output method");
+                }
                 handleOutput(inputArr[1]);
                 break;
-            case "asciiArt": //todo didnt succed to do it afficiently
-                if(isNeedToUpdateAsciiArt){
-                    if (isNeedToCalculateBrightness) {
-                        asciiArtAlgorithm = new AsciiArtAlgorithm(image, subImgCharMatcher, resolution);
-                        asciiArt = asciiArtAlgorithm.run();
-                        isNeedToCalculateBrightness = false;
-                        System.out.println("in new AsciiArtAlgorithm");
-                    }
-                    else {
-                        asciiArt = asciiArtAlgorithm.run();
-                        System.out.println("in just set asciiArt");
-                    }
-                    isNeedToUpdateAsciiArt = false;
-                }
-                asciiOutput.out(asciiArt);
+            case "asciiArt":
+                executeAsciiArt();
                 break;
             default:
-                System.out.println("Invalid command");
+                throw new InvalidCommandException();
         }
     }
 
-    private void setNewImage(String path) throws IOException {
-        image = new Image(path);
+    private boolean isArgsExist(String[] inputArr) {
+        return inputArr.length >= 2;
+
+    }
+
+    private void executeAsciiArt() throws EmptyCharSetException {
+        if(isNeedToUpdateAsciiArt){
+            if (isNeedToCalculateBrightness) {
+                asciiArtAlgorithm = new AsciiArtAlgorithm(image, subImgCharMatcher, resolution);
+                asciiArt = asciiArtAlgorithm.run();
+                isNeedToCalculateBrightness = false;
+            }
+            else {
+                asciiArt = asciiArtAlgorithm.run();
+            }
+            isNeedToUpdateAsciiArt = false;
+        }
+        asciiOutput.out(asciiArt);
+    }
+
+    private void setNewImage(String path) throws InvalidImageArgumentException {
+        try {
+            image = new Image(path);
+        }
+        catch (IOException e){
+            throw new InvalidImageArgumentException();
+        }
         image = ImageProcessor.padImage(image);
         maxResolution = image.getWidth();
         minResolution = Math.max(1, image.getWidth() / image.getHeight());
@@ -101,7 +168,7 @@ public class Shell {
         isNeedToCalculateBrightness = true;
     }
 
-    private void handleOutput(String outputType) {
+    private void handleOutput(String outputType) throws InvalidArgumentException{
         switch (outputType) {
             case "html":
                 asciiOutput = new ascii_output.HtmlAsciiOutput("output.html", "Courier New");
@@ -110,19 +177,18 @@ public class Shell {
                 asciiOutput = new ConsoleAsciiOutput();
                 break;
             default:
-                System.out.println("did not change output method due to incorrect format");
+                throw new InvalidArgumentException("change output method");
         }
     }
 
-    //todo: change to more appropriate exception
-    private void updateResolution (String changeResolutionCommand)  throws IllegalArgumentException {
+    private void updateResolution (String changeResolutionCommand)  throws CommandException {
             if (changeResolutionCommand.equals("up")) {
                 resolutionUp();
             } else if (changeResolutionCommand.equals("down")) {
                 resolutionDown();
-            } else { //todo delete and throw exception instead
-                System.out.println("Did not change resolution due to incorrect format.");
-                return;
+            } else {
+                throw new InvalidArgumentException("change resolution");
+
             }
 
 
@@ -131,18 +197,17 @@ public class Shell {
 
     }
 
-    private void resolutionUp() {
+    private void resolutionUp() throws ExceedingBoundariesException {
         if (resolution < maxResolution) {
             resolution *= 2;
             isNeedToUpdateAsciiArt = true;
             isNeedToCalculateBrightness = true;
         }
         else{
-            // todo: change to more appropriate exception
-            throw new IllegalArgumentException("Resolution is already at maximum");
+            throw new ExceedingBoundariesException();
         }
     }
-    private void resolutionDown() {
+    private void resolutionDown() throws ExceedingBoundariesException {
         if (resolution > this.minResolution) {
             resolution /= 2;
             isNeedToUpdateAsciiArt = true;
@@ -150,13 +215,15 @@ public class Shell {
 
         }
         else{
-            //todo: change to more appropriate exception
-            throw new IllegalArgumentException("Resolution is already at minimum");
+            throw new ExceedingBoundariesException();
         }
     }
 
-    private void removeChar(String charsToRemove) {
+    private void removeChar(String charsToRemove) throws InvalidArgumentException{
         char[] newChars = handleChars(charsToRemove);
+        if (newChars.length == 0) {
+            throw new InvalidArgumentException("remove");
+        }
         for (char c : newChars) {
             this.asciiCharsToUse.remove(c);
             subImgCharMatcher.removeChar(c);
@@ -164,8 +231,12 @@ public class Shell {
         isNeedToUpdateAsciiArt = true;
     }
 
-    private void addChar(String charsToAdd) {
+    private void addChar(String charsToAdd) throws InvalidArgumentException {
+
         char[] newChars = handleChars(charsToAdd);
+        if (newChars.length == 0) {
+            throw new InvalidArgumentException("add");
+        }
         for (char c : newChars) {
             this.asciiCharsToUse.add(c);
             subImgCharMatcher.addChar(c);
@@ -186,7 +257,7 @@ public class Shell {
         } else if (charsToAdd.length() == 1) {
             charsToHandle = new char[1];
             charsToHandle[0] = charsToAdd.charAt(0);
-        } else if (charsToAdd.charAt(1) == '-') {
+        } else if (charsToAdd.charAt(1) == '-' && charsToAdd.length() == 3){
 
             char start = charsToAdd.charAt(0);
             char end = charsToAdd.charAt(2);
@@ -200,9 +271,7 @@ public class Shell {
                 charsToHandle[i - start] = (char) i;
             }
         }
-        else {
-            assert false : "Invalid charsToAdd";//todo: remove assert
-        }
+
         return charsToHandle;
     }
 
@@ -213,7 +282,7 @@ public class Shell {
         System.out.println();
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args){
         Shell shell = new Shell();
         shell.run();
     }
