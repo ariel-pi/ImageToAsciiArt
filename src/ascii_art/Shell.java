@@ -124,6 +124,8 @@ public class Shell {
                 System.out.println("Did not change resolution due to incorrect format.");
                 return;
             }
+
+
             System.out.println("Resolution set to " + resolution);
 
 
@@ -215,4 +217,5 @@ public class Shell {
         Shell shell = new Shell();
         shell.run();
     }
+
 }

@@ -39,6 +39,8 @@ public class SubImgCharMatcher {
         return (double) numWhitePixels / numPixels;
     }
     public char getCharByImageBrightness(double brightness) {
+        //normalize the brightness to be between 0 and 1
+        brightness = brightness*(maxBrightness - minBrightness)+ minBrightness;
         //todo if map is empty
         Double closestKey;
         Double ceilingKey = charBrightnessMap.ceilingKey(brightness);
@@ -58,6 +60,7 @@ public class SubImgCharMatcher {
 
     public void addChar(char c) {
         Double brightness = getBrightness(CharConverter.convertToBoolArray(c));
+
         if (charBrightnessMap.containsKey(brightness)) {
             charBrightnessMap.get(brightness).add(c);// add the character to the set of
             // characters with the same brightness in sorted order by ascii value
@@ -74,7 +77,11 @@ public class SubImgCharMatcher {
             minBrightness = brightness;
             isNeedToNormalize = true;
         }
+
     }
+
+
+
 
     public void removeChar(char c) {
         //we prefer to go through the map and not to use getBrightness method because getBrightness does
@@ -98,26 +105,8 @@ public class SubImgCharMatcher {
     }
 
 
-    /**
-     * Normalizes the brightness of the characters in the map to be between 0 and 1.
-     * use this method just before displaying the image.
-     */
-    public void normalizeBrightness() {
-        if (!isNeedToNormalize) {
-            return;
-        }
-        TreeMap <Double, TreeSet<Character>> newCharBrightnessMap = new TreeMap<>();
-        Double minBrightness = charBrightnessMap.firstKey();
-        Double maxBrightness = charBrightnessMap.lastKey();
-        for (Double brightness : charBrightnessMap.keySet()) {
-            Double newBrightness = (brightness - minBrightness) / (maxBrightness - minBrightness);
-            newCharBrightnessMap.put(newBrightness, charBrightnessMap.get(brightness));
-        }
-        charBrightnessMap = newCharBrightnessMap;
-        this.minBrightness = charBrightnessMap.firstKey();
-        this.maxBrightness = charBrightnessMap.lastKey();
-        isNeedToNormalize = false;
-    }
+
+
 
 
 }
