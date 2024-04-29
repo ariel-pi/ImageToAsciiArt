@@ -42,4 +42,7 @@ You can change the output method to display ASCII art in HTML format by using th
 ## Authors
 
 - Ariel Pinhas
-- Amiel Wreschner
+- [GitHub](https://github.com/ariel-pi)
+- [Linkdin](http://www.linkedin.com/in/ariel-pinhas)
+
+- [AmielWre](https://github.com/amielwre)
