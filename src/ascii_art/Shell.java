@@ -11,74 +11,91 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
+/**
+ * The main class responsible for running the ASCII art shell.
+ *  @see AsciiOutput
+ *  @see ConsoleAsciiOutput
+ *  @see Image
+ *  @see ImageProcessor
+ *  @see SubImgCharMatcher
+ *  @see AsciiArtAlgorithm
+ *  @see EmptyCharSetException
+ *  @see InvalidImageArgumentException
+ *  @see InvalidArgumentException
+ *  @see ExceedingBoundariesException
+ *  @see InvalidCommandException
+ *  @see CommandException
+ *  @see KeyboardInput
+ *  @see SubImgCharMatcher
+ *
+ * Author: Ariel Pinhas, Amiel Wreschner
+ */
 public class Shell {
-    public static final String EXCEEDING_BOUNDARIES_MASSAGE = "Did not" +
+    private static final String EXCEEDING_BOUNDARIES_MASSAGE = "Did not" +
             " change resolution due to exceeding boundaries.";
-    public static final String INCORRECT_COMMAND_MASSAGE = "Did not execute due to incorrect command.";
+    private static final String INCORRECT_COMMAND_MASSAGE = "Did not execute due to incorrect command.";
     private static final String IMAGE_LOAD_ERROR_MASSAGE = "Did not execute due to problem with image file.";
-    public static final String EMPTY_CHARSET_ERROR_MASSAGE = "Did not execute. Charset is empty.";
+    private static final String EMPTY_CHARSET_ERROR_MASSAGE = "Did not execute. Charset is empty.";
+    private static final char[] DEFAULT_CHARS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+    private static final int DEFAULT_RESOLUTION = 128;
+    private static final String DEFAULT_PATH = "flower.jpg";
+    private int resolution; // Resolution for ASCII art generation
+    private int maxResolution; // Maximum allowable resolution based on the image width
+    private int minResolution; // Minimum allowable resolution based on the image dimensions
+    private TreeSet<Character> asciiCharsToUse; // Set of ASCII characters to use for art generation
+    private AsciiArtAlgorithm asciiArtAlgorithm; // Algorithm for generating ASCII art
+    private char[][] asciiArt; // Generated ASCII art
+    private boolean isNeedToUpdateAsciiArt = true; // Flag indicating if ASCII art needs to be updated
+    private boolean isNeedToCalculateBrightness = true; // Flag indicating if brightness calculation is needed
+    private AsciiOutput asciiOutput = new ConsoleAsciiOutput(); // Output method for displaying ASCII art
+    private SubImgCharMatcher subImgCharMatcher; // Character matcher for sub-image comparison
+    private Image image; // Image used for ASCII art generation
 
+    /**
+     * Main method to run the ASCII art shell.
+     *
+     * @param args Command-line arguments (unused).
+     */
+    public static void main(String[] args) {
+        Shell shell = new Shell();
+        shell.run();
+    }
 
-
-
-    public static final char[] DEFAULT_CHARS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-    public static final int DEFAULT_RESOLUTION = 128;
-    public static final String DEFAULT_PATH = "cat.jpeg";
-    private int resolution;
-    private int maxResolution;
-    private int minResolution;
-    private TreeSet<Character> asciiCharsToUse;
-    private AsciiArtAlgorithm asciiArtAlgorithm;
-    private char[][] asciiArt;
-    private boolean isNeedToUpdateAsciiArt = true;
-    private boolean isNeedToCalculateBrightness = true;
-    private AsciiOutput asciiOutput = new ConsoleAsciiOutput();
-    private SubImgCharMatcher subImgCharMatcher;
-    private Image image;
-
+    /**
+     * Starts the ASCII art shell and continuously prompts for user input.
+     * The shell will execute commands until the user enters "exit".
+     */
     public void run() {
         try {
             initializeDefaultValues();
-
-        }
-        catch (InvalidImageArgumentException e){
+        } catch (InvalidImageArgumentException e) {
             System.out.println(IMAGE_LOAD_ERROR_MASSAGE);
         }
         System.out.print(">>> ");
         String input = KeyboardInput.readLine();
         while (!input.equals("exit")) {
-            try{
+            try {
                 handleInput(input);
-            }
-            catch (InvalidArgumentException e){
-                System.out.println("Did not "+e.getMessage()+" due to incorrect format.");
-            }
-            catch (ExceedingBoundariesException e){
+            } catch (InvalidArgumentException e) {
+                System.out.println("Did not " + e.getMessage() + " due to incorrect format.");
+            } catch (ExceedingBoundariesException e) {
                 System.out.println(EXCEEDING_BOUNDARIES_MASSAGE);
-            }
-            catch (InvalidImageArgumentException e){
+            } catch (InvalidImageArgumentException e) {
                 System.out.println(IMAGE_LOAD_ERROR_MASSAGE);
-            }
-            catch (EmptyCharSetException e){
+            } catch (EmptyCharSetException e) {
                 System.out.println(EMPTY_CHARSET_ERROR_MASSAGE);
-            }
-            catch (InvalidCommandException e) {
+            } catch (InvalidCommandException e) {
+                System.out.println(INCORRECT_COMMAND_MASSAGE);
+            } catch (CommandException eSubImgCharMatcher) {
                 System.out.println(INCORRECT_COMMAND_MASSAGE);
             }
-            catch (CommandException e) {
-                System.out.println(INCORRECT_COMMAND_MASSAGE);
-            }
-
-
             System.out.print(">>> ");
             input = KeyboardInput.readLine();
         }
     }
 
-
-
-
-    private void initializeDefaultValues() throws InvalidImageArgumentException{
+    // Initializes default values for the ASCII art shell.
+    private void initializeDefaultValues() throws InvalidImageArgumentException {
         subImgCharMatcher = new SubImgCharMatcher(DEFAULT_CHARS);
         resolution = DEFAULT_RESOLUTION;
         setNewImage(DEFAULT_PATH);
@@ -89,39 +106,41 @@ public class Shell {
         }
     }
 
+    // Handles user input by parsing the command and executing corresponding actions.
     private void handleInput(String input) throws CommandException {
         String[] inputArr = input.split(" ");
         switch (inputArr[0]) {
-            //if inputArr[1] is not exist, and should exist, we will throw an exception, although it is not required.
+            //if inputArr[1] is not exist, and should exist, we will throw an exception,
+            // although it is not required.
             case "chars":
                 printChars();
                 break;
             case "add":
-                if(!isArgsExist(inputArr)){
+                if (!isArgsExist(inputArr)) {
                     throw new InvalidArgumentException("add");
                 }
                 addChar(inputArr[1]);
                 break;
             case "remove":
-                if(!isArgsExist(inputArr)){
+                if (!isArgsExist(inputArr)) {
                     throw new InvalidArgumentException("remove");
                 }
                 removeChar(inputArr[1]);
                 break;
             case "res":
-                if(!isArgsExist(inputArr)){
+                if (!isArgsExist(inputArr)) {
                     throw new InvalidArgumentException("change resolution");
                 }
                 updateResolution(inputArr[1]);
                 break;
             case "image":
-                if(!isArgsExist(inputArr)){
+                if (!isArgsExist(inputArr)) {
                     throw new InvalidImageArgumentException();
                 }
                 setNewImage(inputArr[1]);
                 break;
             case "output":
-                if(!isArgsExist(inputArr)){
+                if (!isArgsExist(inputArr)) {
                     throw new InvalidArgumentException("change output method");
                 }
                 handleOutput(inputArr[1]);
@@ -134,19 +153,19 @@ public class Shell {
         }
     }
 
+    // Checks if arguments exist in the user input.
     private boolean isArgsExist(String[] inputArr) {
         return inputArr.length >= 2;
-
     }
 
+    // Executes the ASCII art generation algorithm and outputs the result.
     private void executeAsciiArt() throws EmptyCharSetException {
-        if(isNeedToUpdateAsciiArt){
+        if (isNeedToUpdateAsciiArt) {
             if (isNeedToCalculateBrightness) {
                 asciiArtAlgorithm = new AsciiArtAlgorithm(image, subImgCharMatcher, resolution);
                 asciiArt = asciiArtAlgorithm.run();
                 isNeedToCalculateBrightness = false;
-            }
-            else {
+            } else {
                 asciiArt = asciiArtAlgorithm.run();
             }
             isNeedToUpdateAsciiArt = false;
@@ -154,11 +173,11 @@ public class Shell {
         asciiOutput.out(asciiArt);
     }
 
+    // Sets a new image for ASCII art generation.
     private void setNewImage(String path) throws InvalidImageArgumentException {
         try {
             image = new Image(path);
-        }
-        catch (IOException e){
+        } catch (IOException e) {
             throw new InvalidImageArgumentException();
         }
         image = ImageProcessor.padImage(image);
@@ -168,7 +187,8 @@ public class Shell {
         isNeedToCalculateBrightness = true;
     }
 
-    private void handleOutput(String outputType) throws InvalidArgumentException{
+    // Handles the output type for ASCII art display.
+    private void handleOutput(String outputType) throws InvalidArgumentException {
         switch (outputType) {
             case "html":
                 asciiOutput = new ascii_output.HtmlAsciiOutput("output.html", "Courier New");
@@ -181,45 +201,42 @@ public class Shell {
         }
     }
 
-    private void updateResolution (String changeResolutionCommand)  throws CommandException {
-            if (changeResolutionCommand.equals("up")) {
-                resolutionUp();
-            } else if (changeResolutionCommand.equals("down")) {
-                resolutionDown();
-            } else {
-                throw new InvalidArgumentException("change resolution");
-
-            }
-
-
-            System.out.println("Resolution set to " + resolution);
-
-
+    // Updates the resolution for ASCII art generation.
+    private void updateResolution(String changeResolutionCommand) throws CommandException {
+        if (changeResolutionCommand.equals("up")) {
+            resolutionUp();
+        } else if (changeResolutionCommand.equals("down")) {
+            resolutionDown();
+        } else {
+            throw new InvalidArgumentException("change resolution");
+        }
+        System.out.println("Resolution set to " + resolution);
     }
 
+    // Increases the resolution for ASCII art generation.
     private void resolutionUp() throws ExceedingBoundariesException {
         if (resolution < maxResolution) {
             resolution *= 2;
             isNeedToUpdateAsciiArt = true;
             isNeedToCalculateBrightness = true;
-        }
-        else{
+        } else {
             throw new ExceedingBoundariesException();
         }
     }
+
+    // Decreases the resolution for ASCII art generation.
     private void resolutionDown() throws ExceedingBoundariesException {
         if (resolution > this.minResolution) {
             resolution /= 2;
             isNeedToUpdateAsciiArt = true;
             isNeedToCalculateBrightness = true;
-
-        }
-        else{
+        } else {
             throw new ExceedingBoundariesException();
         }
     }
 
-    private void removeChar(String charsToRemove) throws InvalidArgumentException{
+    // Removes characters from the ASCII character set.
+    private void removeChar(String charsToRemove) throws InvalidArgumentException {
         char[] newChars = handleChars(charsToRemove);
         if (newChars.length == 0) {
             throw new InvalidArgumentException("remove");
@@ -231,8 +248,8 @@ public class Shell {
         isNeedToUpdateAsciiArt = true;
     }
 
+    // Adds characters to the ASCII character set.
     private void addChar(String charsToAdd) throws InvalidArgumentException {
-
         char[] newChars = handleChars(charsToAdd);
         if (newChars.length == 0) {
             throw new InvalidArgumentException("add");
@@ -244,6 +261,7 @@ public class Shell {
         isNeedToUpdateAsciiArt = true;
     }
 
+    // Handles character ranges and special cases.
     private char[] handleChars(String charsToAdd) {
         char[] charsToHandle = new char[0];
         if (charsToAdd.equals("all")) {
@@ -257,7 +275,7 @@ public class Shell {
         } else if (charsToAdd.length() == 1) {
             charsToHandle = new char[1];
             charsToHandle[0] = charsToAdd.charAt(0);
-        } else if (charsToAdd.charAt(1) == '-' && charsToAdd.length() == 3){
+        } else if (charsToAdd.charAt(1) == '-' && charsToAdd.length() == 3) {
 
             char start = charsToAdd.charAt(0);
             char end = charsToAdd.charAt(2);
@@ -275,16 +293,11 @@ public class Shell {
         return charsToHandle;
     }
 
+    // Prints the characters in the ASCII character set.
     private void printChars() {
         for (char c : this.asciiCharsToUse) {
             System.out.print(c + " ");
         }
         System.out.println();
     }
-
-    public static void main(String[] args){
-        Shell shell = new Shell();
-        shell.run();
-    }
-
 }

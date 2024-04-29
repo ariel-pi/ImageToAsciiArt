@@ -5,19 +5,23 @@ import ascii_art.EmptyCharSetException;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-
+/**
+ * Matches characters to image brightness levels.
+ * This class provides functionality to match characters to image brightness levels
+ * based on a predefined character set.
+ *
+ * Author: Ariel Pinhas, Amiel Wreschner
+ */
 public class SubImgCharMatcher {
 
-    private  TreeMap<Double, TreeSet<Character>> charBrightnessMap = new TreeMap<>();
-    /**
-     * A flag to indicate if the brightness of the characters in the map needs to be normalized.
-     * After normalize once this flag set to be false until we added a new char with grater brightness then
-     * the max brightness or a new char with less brightness then the min brightness.
-     */
-    private boolean isNeedToNormalize = true;
+    private TreeMap<Double, TreeSet<Character>> charBrightnessMap = new TreeMap<>();
     private Double maxBrightness;
     private Double minBrightness;
 
+    /**
+     * Constructs a SubImgCharMatcher with a given character set.
+     * @param charset The character set used for matching.
+     */
     public SubImgCharMatcher(char[] charset) {
         maxBrightness = null;
         minBrightness = null;
@@ -26,6 +30,9 @@ public class SubImgCharMatcher {
         }
     }
 
+    // Calculates the brightness of an image matrix.
+    // This method calculates the brightness of an image represented by a boolean matrix
+    // where 'true' indicates a white pixel and 'false' indicates a black pixel.
     private double getBrightness(boolean[][] imgMatrix) {
         int numWhitePixels = 0;
         int numPixels = imgMatrix.length * imgMatrix[0].length;
@@ -35,39 +42,46 @@ public class SubImgCharMatcher {
                     numWhitePixels++;
                 }
             }
-
         }
         return (double) numWhitePixels / numPixels;
     }
+
+    /**
+     * Gets the character corresponding to the given image brightness.
+     * @param brightness The brightness value of the image.
+     * @return The character matching the given brightness.
+     * @throws EmptyCharSetException if the character set is empty.
+     */
     public char getCharByImageBrightness(double brightness) throws EmptyCharSetException {
         if (charBrightnessMap.isEmpty()) {
             throw new EmptyCharSetException();
         }
-        //normalize the brightness to be between 0 and 1
-        brightness = brightness*(maxBrightness - minBrightness)+ minBrightness;
+        // Normalize the brightness to be between 0 and 1.
+        brightness = brightness * (maxBrightness - minBrightness) + minBrightness;
 
         Double closestKey;
         Double ceilingKey = charBrightnessMap.ceilingKey(brightness);
         Double floorKey = charBrightnessMap.floorKey(brightness);
         if (ceilingKey == null) {
             closestKey = floorKey;
-        }
-        else if (floorKey == null) {
+        } else if (floorKey == null) {
             closestKey = ceilingKey;
-        }
-        else {
+        } else {
             closestKey = Math.abs(ceilingKey - brightness) < Math.abs(floorKey - brightness) ?
                     ceilingKey : floorKey;
         }
         return charBrightnessMap.get(closestKey).first();
     }
 
+    /**
+     * Adds a character to the character set along with its brightness value.
+     * @param c The character to add.
+     */
     public void addChar(char c) {
         Double brightness = getBrightness(CharConverter.convertToBoolArray(c));
 
         if (charBrightnessMap.containsKey(brightness)) {
-            charBrightnessMap.get(brightness).add(c);// add the character to the set of
-            // characters with the same brightness in sorted order by ascii value
+            charBrightnessMap.get(brightness).add(c);
         } else {
             TreeSet<Character> charList = new TreeSet<>();
             charList.add(c);
@@ -75,30 +89,34 @@ public class SubImgCharMatcher {
         }
         if (maxBrightness == null || brightness > maxBrightness) {
             maxBrightness = brightness;
-            isNeedToNormalize = true;
         }
         if (minBrightness == null || brightness < minBrightness) {
             minBrightness = brightness;
-            isNeedToNormalize = true;
         }
 
     }
 
-
-
-
+    /**
+     * Removes a character from the character set.
+     * @param c The character to remove.
+     */
     public void removeChar(char c) {
-        //we prefer to go through the map and not to use getBrightness method because getBrightness does
-        // 16*16 and the max size of the map is 132 (for all ascii characters).
         for (Double brightness : charBrightnessMap.keySet()) {
             for (Character character : charBrightnessMap.get(brightness)) {
                 if (character.equals(c)) {
                     charBrightnessMap.get(brightness).remove(c);
                     if (charBrightnessMap.get(brightness).isEmpty()) {
                         charBrightnessMap.remove(brightness);
-                        if (brightness.equals(maxBrightness) || brightness.equals(minBrightness)) {
-                            isNeedToNormalize = true; //no need to update maxBrightness or minBrightness
-                            // because the normalizing method will do it.
+                        if (charBrightnessMap.isEmpty()) {
+                            maxBrightness = null;
+                            minBrightness = null;
+                            return;
+                        }
+                        if (brightness.equals(maxBrightness)) {
+                            maxBrightness = charBrightnessMap.lowerKey(brightness);
+                        }
+                        if (brightness.equals(minBrightness)) {
+                            minBrightness = charBrightnessMap.higherKey(brightness);
                         }
                         return;
                     }
@@ -107,10 +125,4 @@ public class SubImgCharMatcher {
             }
         }
     }
-
-
-
-
-
-
 }
