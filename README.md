@@ -2,13 +2,12 @@
 
 This project implements an ASCII art shell, which allows users to generate ASCII representations of images using a set of ASCII characters. The shell provides various commands for manipulating the image, adjusting resolution, adding or removing ASCII characters, and changing output methods.
 
+![screenshot](asciiArt_screenshot.jpg)
 ## Usage
 
 To run the ASCII art shell, simply execute the `Shell` class. The shell will continuously prompt for user input until the user enters "exit".
 
-```java
-java Shell
-```
+
 
 ## Commands
 
