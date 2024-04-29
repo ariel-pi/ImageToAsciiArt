@@ -35,7 +35,7 @@ The shell handles the following exceptions:
 
 By default, the ASCII art shell uses a sample image `flower.jpg` as the input for ASCII art generation. The ASCII art is displayed in the console using the default output method.
 
-You can change the output method to display ASCII art in HTML format by using the `output` command followed by the argument `html`. For example:
+You can change the output method to display ASCII art in HTML format by using the `output` command followed by the argument `html`. For example: `output html`.
 
 
 ## Authors
